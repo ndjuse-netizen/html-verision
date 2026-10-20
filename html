@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+2
+<html lang="sv">
+3
+<head>
+4
+<meta charset="UTF-8">
+5
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+6
+<title>Träningscykel 5x5 & GVT</title>
+7
+ 
+8
+<style>
+9
+:root{
+10
+--primary:#2563eb;
+11
+--bg:#f5f7fa;
+12
+--card:#ffffff;
+13
+--text:#1f2937;
+14
+}
+15
+ 
+16
+body{
+17
+font-family:Arial,sans-serif;
+18
+background:var(--bg);
+19
+color:var(--text);
+20
+margin:0;
+21
+padding:20px;
+22
+}
+23
+ 
+24
+.container{
+25
+max-width:900px;
+26
+margin:auto;
+27
+}
+28
+ 
+29
+h1{
+30
+text-align:center;
+31
+}
+32
+ 
+33
+.week{
+34
+background:var(--card);
+35
+border-radius:12px;
+36
+padding:20px;
+37
+margin-bottom:20px;
+38
+box-shadow:0 2px 8px rgba(0,0,0,.1);
+39
+}
+40
+ 
+41
+h2{
+42
+color:var(--primary);
+43
+}
+44
+ 
+45
+.exercise{
+46
+display:flex;
+47
+align-items:center;
+48
+gap:10px;
+49
+padding:8px 0;
+50
+border-bottom:1px solid #eee;
+51
+}
+52
+ 
+53
+.exercise:last-child{
+54
+border-bottom:none;
+55
+}
+56
+ 
+57
+.exercise input[type="number"]{
+58
+width:80px;
+59
+padding:5px;
+60
+}
+61
+ 
+62
+.day{
+63
+margin-top:15px;
+64
+font-weight:bold;
+65
+}
+66
+ 
+67
+button{
+68
+background:var(--primary);
+69
+color:white;
+70
+border:none;
+71
+padding:12px 18px;
+72
+border-radius:8px;
+73
+cursor:pointer;
+74
+margin-top:10px;
+75
+}
+76
+ 
+77
+button:hover{
+78
+opacity:.9;
+79
+}
+80
+</style>
+81
+</head>
+82
+<body>
+83
+ 
+84
+<div class="container">
+85
+ 
+86
+<h1>🏋️ 4-veckors Träningscykel</h1>
+87
+ 
+88
+<button onclick="resetData()">Återställ logg</button>
+89
+ 
+90
+<div id="app"></div>
+91
+ 
+92
+</div>
+93
+ 
+94
+<script>
+95
+ 
+96
+const program = [
+97
+{
+98
+title:"Vecka 1 - 5x5 (A-B-A)",
+99
+days:{
+100
+"Måndag":[
+101
+"Knäböj 5x5",
+102
+"Bänkpress 5x5",
+103
+"Hantelrodd 5x5"
+104
+],
+105
+"Onsdag":[
+106
+"Marklyft 5x5",
+107
+"Militärpress 5x5",
+108
+"Latsdrag 5x5"
+109
+],
+110
+"Fredag":[
+111
+"Knäböj 5x5",
+112
+"Bänkpress 5x5",
+113
+"Hantelrodd 5x5"
+114
+]
+115
+}
+116
+},
+117
+{
+118
+title:"Vecka 2 - 5x5 (B-A-B)",
+119
+days:{
+120
+"Måndag":[
+121
+"Marklyft 5x5",
+122
+"Militärpress 5x5",
+123
+"Latsdrag 5x5"
+124
+],
+125
+"Onsdag":[
+126
+"Knäböj 5x5",
+127
+"Bänkpress 5x5",
+128
+"Hantelrodd 5x5"
+129
+],
+130
+"Fredag":[
+131
+"Marklyft 5x5",
+132
+"Militärpress 5x5",
+133
+"Latsdrag 5x5"
+134
+]
+135
+}
+136
+},
+137
+{
+138
+title:"Vecka 3 - German Volume Training",
+139
+days:{
+140
+"Day 1 - Chest & Back":[
+141
+"Bänkpress 10x10",
+142
+"Pendlay Row 10x10",
+143
+"Incline Hantelpress 3x15"
+144
+],
+145
+"Day 2":[
+146
+"Vila"
+147
+],
+148
+"Day 3 - Legs & Abs":[
+149
+"Knäböj 10x10",
+150
+"Stiff Leg Deadlift 10x10",
+151
+"Benpress 3x12",
+152
+"Hängande benlyft 3x15"
+153
+],
+154
+"Day 4":[
+155
+"Vila"
+156
+],
+157
+"Day 5 - Shoulders & Arms":[
+158
+"Push Press 10x10",
+159
+"Rear Delt Machine 3x15",
+160
+"Biceps 3x12",
+161
+"Triceps 3x12"
+162
+],
+163
+"Day 6-7":[
+164
+"Vila"
+165
+]
+166
+}
+167
+},
+168
+{
+169
+title:"Vecka 4 - Aktiv återhämtning",
+170
+days:{
+171
+"Måndag":["Vila"],
+172
+"Tisdag":["Vila"],
+173
+"Onsdag":["Vila"],
+174
+"Torsdag":["Vila / Fasta"],
+175
+"Fredag":["Vila"],
+176
+"Lördag":["Vila"],
+177
+"Söndag":["Vila"]
+178
+}
+179
+}
+180
+];
+181
+ 
+182
+const app=document.getElementById("app");
+183
+ 
+184
+const saved = JSON.parse(localStorage.getItem("trainingData") || "{}");
+185
+ 
+186
+program.forEach((week,wIndex)=>{
+187
+ 
+188
+const section=document.createElement("div");
+189
+section.className="week";
+190
+ 
+191
+let html=`<h2>${week.title}</h2>`;
+192
+ 
+193
+Object.entries(week.days).forEach(([day,exercises],dIndex)=>{
+194
+ 
+195
+html+=`<div class="day">${day}</div>`;
+196
+ 
+197
+exercises.forEach((exercise,eIndex)=>{
+198
+ 
+199
+const key=`${wIndex}-${dIndex}-${eIndex}`;
+200
+const done=saved[key]?.done ? "checked" : "";
+201
+const weight=saved[key]?.weight || "";
+202
+ 
+203
+html+=`
+204
+<div class="exercise">
+205
+<input type="checkbox"
+206
+${done}
+207
+onchange="saveData('${key}','done',this.checked)">
+208
+<span>${exercise}</span>
+209
+<input type="number"
+210
+placeholder="kg"
+211
+value="${weight}"
+212
+onchange="saveData('${key}','weight',this.value)">
+213
+</div>
+214
+`;
+215
+ 
+216
+});
+217
+ 
+218
+});
+219
+ 
+220
+section.innerHTML=html;
+221
+app.appendChild(section);
+222
+ 
+223
+});
+224
+ 
+225
+function saveData(key,type,value){
+226
+ 
+227
+let data=JSON.parse(localStorage.getItem("trainingData") || "{}");
+228
+ 
+229
+if(!data[key]) data[key]={};
+230
+ 
+231
+data[key][type]=value;
+232
+ 
+233
+localStorage.setItem(
+234
+"trainingData",
+235
+JSON.stringify(data)
+236
+);
+237
+ 
+238
+}
+239
+ 
+240
+function resetData(){
+241
+ 
+242
+if(confirm("Rensa all träningsdata?")){
+243
+localStorage.removeItem("trainingData");
+244
+location.reload();
+245
+}
+246
+ 
+247
+}
+248
+ 
+249
+</script>
+250
+ 
+251
+</body>
+252
+</html>
+253
+``
